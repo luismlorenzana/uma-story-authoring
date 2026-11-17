@@ -19,5 +19,5 @@ test('a cast pack: its kind, its id and safe image paths', () => {
 })
 
 test('only the Umas, with the served image paths and no sources', () => {
-  assert.deepEqual(packUmas(pack), [{ id: 'h1', name: 'Hero One', role: 'hero', images: { face: '/img/ss-2026-01-02/h1-face.png' } }])
+  assert.deepEqual(packUmas(pack), [{ id: 'h1', name: 'Hero One', role: 'hero', images: { face: './img/ss-2026-01-02/h1-face.png' } }])
 })

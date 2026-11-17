@@ -7,7 +7,6 @@
 //   nothing, as in the game and the release; with the Umas' faces from the cast pack;
 // - the chapter drafts in docs/story/ (original, in git) and the game's story in @farm/domain.
 // Its only write is the owner's reviews, to the private content/story/reviews.json.
-import { createServer } from 'node:http'
 import { readdir, readFile, realpath, rename, writeFile } from 'node:fs/promises'
 import { dirname, extname, join, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -19,16 +18,14 @@ import {
 import { packPeople, packUmas, parseCastPack } from './lib/pack.mjs'
 import { storyCounts } from './lib/counts.mjs'
 
-import { gameRoot } from '../workspace.mjs'
+import { authoringContent, gameRoot } from '../workspace.mjs'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const repo = gameRoot('farm')
 const drafts = resolve(process.env.UMA_FARM_STORY ?? join(repo, 'docs/story'))
 /** The private side (ignored by git): the authored story, the cast pack and the reviews. */
-const content = resolve(process.env.UMA_FARM_CONTENT ?? join(repo, 'content/story'))
+const content = resolve(process.env.UMA_FARM_CONTENT ?? authoringContent('farm', 'story'))
 const domain = join(repo, 'packages/domain/src')
-const port = Number(process.env.UMA_FARM_STORY_PORT ?? 4321)
-if (!Number.isSafeInteger(port) || port < 1 || port > 65535) throw new Error('Invalid port')
 
 const types = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
@@ -248,22 +245,20 @@ function send(response, status, data) {
   response.end(JSON.stringify(data))
 }
 
-const server = createServer((request, response) => {
+export function handle(request, response, pathname) {
   (async () => {
     const host = request.headers.host
-    if (host !== `127.0.0.1:${port}` && host !== `localhost:${port}`) return send(response, 403, { error: 'Use the loopback URL' })
     response.setHeader('x-content-type-options', 'nosniff')
     response.setHeader('content-security-policy', "default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'")
-    const url = new URL(request.url ?? '/', `http://${host}`)
-    if (request.method === 'PUT' && url.pathname === '/api/reviews') {
+    if (request.method === 'PUT' && pathname === '/api/reviews') {
       const sameOrigin = (!request.headers.origin || request.headers.origin === `http://${host}`) && request.headers['sec-fetch-site'] !== 'cross-site'
       if (!sameOrigin || request.headers['content-type']?.split(';')[0] !== 'application/json') return send(response, 403, { error: 'Save from the local page' })
       return send(response, 200, await saveReview(await body(request)))
     }
     if (request.method !== 'GET') return send(response, 405, { error: 'Method not allowed' })
-    if (url.pathname === '/api/state') return send(response, 200, await state())
+    if (pathname === '/api/state') return send(response, 200, await state())
     // An Uma's picture, only when the pack lists it.
-    const img = url.pathname.match(/^\/img\/([a-z0-9-]+)\/([A-Za-z0-9._-]+\.(?:png|webp|jpg))$/)
+    const img = pathname.match(/^\/img\/([a-z0-9-]+)\/([A-Za-z0-9._-]+\.(?:png|webp|jpg))$/)
     if (img) {
       const pack = parseCastPack(await readJson(join(content, 'pack', img[1], 'pack.json')))
       if (!pack.characters.some((c) => Object.values(c.images ?? {}).includes(`images/${img[2]}`))) return send(response, 404, { error: 'Not a pack image' })
@@ -271,7 +266,7 @@ const server = createServer((request, response) => {
       response.writeHead(200, { 'content-type': types[extname(file)], 'cache-control': 'max-age=86400' })
       return response.end(await readFile(file))
     }
-    const page = pages[url.pathname]
+    const page = pages[pathname]
     if (!page) return send(response, 404, { error: 'Not found' })
     response.writeHead(200, { 'content-type': types[extname(page)], 'cache-control': 'no-cache' })
     response.end(await readFile(join(here, page)))
@@ -279,5 +274,4 @@ const server = createServer((request, response) => {
     if (response.headersSent) return response.end()
     send(response, error.status ?? (error.code === 'ENOENT' ? 404 : 500), { error: error.message })
   })
-})
-server.listen(port, '127.0.0.1', () => console.log(`Farm Story Sandbox: http://127.0.0.1:${port}  (story: ${content})`))
+}

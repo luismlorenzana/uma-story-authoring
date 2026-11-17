@@ -22,7 +22,7 @@ export function parseCastPack(value) {
 
 /** A character as the page shows her: her id, name and pictures (their paths as the server serves them). */
 const shown = (pack) => ({ sources, profile, ...c }) => ({
-  ...c, images: Object.fromEntries(Object.entries(c.images ?? {}).map(([k, p]) => [k, `/img/${pack.id}/${p.slice(7)}`])),
+  ...c, images: Object.fromEntries(Object.entries(c.images ?? {}).map(([k, p]) => [k, `./img/${pack.id}/${p.slice(7)}`])),
 })
 
 /** The pack's Umas only (boss boards aren't in the farm's story), with their image paths as the server serves them. */

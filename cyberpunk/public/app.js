@@ -1,13 +1,13 @@
 // The Cyberpunk Story Sandbox's entry: loads the story from the local server and routes between views.
-import { playerView } from '/player.js'
-import { sheetView, spritesView } from '/sprites.js'
-import { biblesView, callsView, castView, chaptersView, chapterView, checksView, D, foesView, formatView, h, index, logView, notesView, profilesView, tiesView, storyView, worldsView, worldView } from '/views.js'
+import { playerView } from './player.js'
+import { sheetView, spritesView } from './sprites.js'
+import { biblesView, callsView, castView, chaptersView, chapterView, checksView, D, foesView, formatView, h, index, logView, notesView, profilesView, tiesView, storyView, worldsView, worldView } from './views.js'
 
 const app = document.getElementById('app')
 let loadedAt = 0
 
 async function load() {
-  const response = await fetch('/api/state', { cache: 'no-store' })
+  const response = await fetch('./api/state', { cache: 'no-store' })
   const data = await response.json()
   if (!response.ok || !data.pack) throw new Error(data.error ?? `HTTP ${response.status}`)
   index(data)
@@ -17,7 +17,7 @@ async function load() {
 }
 
 async function saveReview(input) {
-  const response = await fetch('/api/reviews', { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify(input) })
+  const response = await fetch('./api/reviews', { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify(input) })
   const data = await response.json()
   if (!response.ok) throw new Error(data.error ?? `HTTP ${response.status}`)
   D.data.reviews = data

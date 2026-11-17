@@ -1,8 +1,8 @@
 // The scene player: one scene (or a chapter's debrief) a step at a time, as the game will play it. Choices and a Call's
 // branches are one-tap picks; an interjection slot plays the line of the first lead in the crew's order who is in the
 // squad you set here; story changes (a Lead, a File's line, an Anomaly, a join, coming aboard, a battle) show as cards.
-import { slotLine } from '/model.js'
-import { D, face, h, missionCard, reviewPanel, scriptList } from '/views.js'
+import { slotLine } from './model.js'
+import { D, face, h, missionCard, reviewPanel, scriptList } from './views.js'
 
 export function playerView(chapterId, sceneId, saveReview) {
   const chapter = D.data.pack.chapters[chapterId]

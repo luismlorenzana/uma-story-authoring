@@ -1,6 +1,6 @@
 // The Cyberpunk Story Sandbox's pages. Everything shown is the server's state: the story as the game's parser reads it,
 // the game's own findings, the cast pack's names, and the owner's verdicts. No name or line lives in this file.
-import { castIndex, countWords, deliverables, enemyWords, FOE_RANKS, hexOrNull, storyIndex, VERDICTS, walk } from '/model.js'
+import { castIndex, countWords, deliverables, enemyWords, FOE_RANKS, hexOrNull, storyIndex, VERDICTS, walk } from './model.js'
 
 /** The loaded state and what's derived from it. */
 export const D = { data: null, cast: null, index: null, foes: new Map() }

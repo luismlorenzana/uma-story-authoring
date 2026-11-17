@@ -2,8 +2,8 @@
 // cut by the request's grid in the browser, measured (feet, height, transparency), and shown three ways: playing on a
 // night tile at the size the phone draws it, as a solid silhouette, and cell by cell. Her approved chibi stands beside
 // it for scale. Nothing here names anyone: names come from the cast pack.
-import { animations, cellRect, CELL, expectedSheets, measure, sheetFindings, SHEETS } from '/sprites-model.js'
-import { D, h } from '/views.js'
+import { animations, cellRect, CELL, expectedSheets, measure, sheetFindings, SHEETS } from './sprites-model.js'
+import { D, h } from './views.js'
 
 /** The phone draws a 256-texel cell at 85⅓ pt (one texel a device pixel at DPR 3), so a 512 sheet cell shows at that size. */
 const BOARD = 256 / 3
@@ -106,7 +106,7 @@ function player(img, sheet, anim, chibi) {
 /** The list: each Uma's fourteen sheets, what's back, and her chibi stills on the night board for reference. */
 export function spritesView() {
   const box = h('div', { class: 'sprites' }, h('p', { class: 'loading', text: 'Reading the sheets…' }))
-  getJson('/api/sprites').then(async (data) => {
+  getJson('./api/sprites').then(async (data) => {
     const parts = [h('h1', { text: 'Combat sprites' }),
       h('p', { class: 'muted', text: `D24's request: each Uma's chibi in her combat armor, helmet off then on, as fourteen pose sheets. ChatGPT saves them in ${data.dir}/<outfit>/; this page reads them as they land. Open a sheet to see it at the phone's size, as silhouettes, and cell by cell.` })]
     for (const outfit of data.outfits) {
@@ -117,7 +117,7 @@ export function spritesView() {
         for (const view of ['key', 'front', 'back', 'left', 'right']) {
           const W = BOARD + 20, H = BOARD + 18, footY = (480 / CELL) * BOARD + 6
           const [c, ctx] = canvas(W, H, 'sprite-tile')
-          image(`/chibi/${outfit}/${view}.png`).then((img) => { nightTile(ctx, W, H, footY); ctx.drawImage(img, 10, footY - (240 / 256) * BOARD, BOARD, BOARD) }).catch(() => {})
+          image(`./chibi/${outfit}/${view}.png`).then((img) => { nightTile(ctx, W, H, footY); ctx.drawImage(img, 10, footY - (240 / 256) * BOARD, BOARD, BOARD) }).catch(() => {})
           stills.append(h('figure', { class: 'sprite-still' }, c, h('figcaption', { text: view })))
         }
       }
@@ -139,12 +139,12 @@ export function sheetView(outfit, which) {
   const box = h('div', { class: 'sprites' }, h('p', { class: 'loading', text: 'Cutting the sheet…' }))
   const spec = SHEETS[sheet]
   if (!spec) { box.replaceChildren(h('div', { class: 'error-box', text: `No sheet called ${which}` })); return box }
-  getJson('/api/sprites').then(async (data) => {
+  getJson('./api/sprites').then(async (data) => {
     const got = data.sheets.find((s) => s.outfit === Number(outfit) && s.sheet === sheet && s.helmet === helmet)
     if (!got) throw new Error('That sheet isn’t back yet.')
-    const img = await image(`/sheet/${outfit}/${got.file}?t=${Date.now()}`)
+    const img = await image(`./sheet/${outfit}/${got.file}?t=${Date.now()}`)
     const chibis = {}
-    if (data.chibi[outfit]) for (const view of ['front', 'back', 'left', 'right', 'key']) chibis[view] = await image(`/chibi/${outfit}/${view}.png`).catch(() => null)
+    if (data.chibi[outfit]) for (const view of ['front', 'back', 'left', 'right', 'key']) chibis[view] = await image(`./chibi/${outfit}/${view}.png`).catch(() => null)
     const rects = spec.cells.map((_, i) => cellRect(sheet, i, img.naturalWidth, img.naturalHeight))
     const measures = rects.map((r) => { const { a, w, h: hh } = alphaOf(img, r); return measure(a, w, hh) })
     const findings = sheetFindings(sheet, measures)

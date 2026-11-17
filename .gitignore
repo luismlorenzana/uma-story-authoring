@@ -4,3 +4,16 @@
 /dist/
 /coverage/
 .env*
+
+# Originals, drafts and generated media belong under /content/.
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.gif
+*.avif
+*.bmp
+*.ico
+*.svg
+*.tiff
+*.psd
