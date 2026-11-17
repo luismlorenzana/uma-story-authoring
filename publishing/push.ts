@@ -1,4 +1,4 @@
-// `pnpm story:push <book> [--from <dir>] [--dry-run]`: copies a book's drafts to Uma Story's review copy,
+// `pnpm run publish <book> [--from <dir>] [--dry-run]`: copies a book's drafts to Uma Story's review copy,
 // `gs://uma-platform-content/story/<book>/` (US1, AP55–AP57). Only text that changed goes up (never a picture, a pack or
 // an export), nothing is ever deleted there, and the bucket keeps every older version, so a push is also the backup.
 // When the book has a check report (`checks.json`), it must describe the drafts as they are now, or the push is refused.
@@ -6,7 +6,7 @@ import { bucketRemote, BOOKS, BUCKET, folderOf, isBook, push } from './lib.js'
 
 const args = process.argv.slice(2).filter((a) => a !== '--')
 const book = args.find((a) => !a.startsWith('--'))
-if (!isBook(book)) throw new Error(`Name the book: pnpm story:push <${BOOKS.join('|')}> [--from <dir>] [--dry-run]`)
+if (!isBook(book)) throw new Error(`Name the book: pnpm run publish <${BOOKS.join('|')}> [--from <dir>] [--dry-run]`)
 const from = args.includes('--from') ? args[args.indexOf('--from') + 1] : undefined
 const dryRun = args.includes('--dry-run')
 const dir = folderOf(book, from)
