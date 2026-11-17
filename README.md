@@ -12,6 +12,6 @@ Run with Node 22 or newer. Set `UMA_STORY_CONTENT` to change the private content
 Set `UMA_WORKSPACE` if the game checkouts are elsewhere, or set `UMA_QUEST_ROOT`, `UMA_FARM_ROOT`, or `UMA_CYBERPUNK_ROOT` individually.
 Farm and Cyberpunk validate through the corresponding game code. Game release packing continues to use each game's own schema and publication command.
 
-`pnpm publish quest --dry-run` plans a copy for the existing private Platform Story reader. Farm and Cast use the same command with their book name. Publishing to the hosted reader uses the owner's existing scoped Google Cloud configuration. Cyberpunk has a local book.
+`pnpm run publish quest --dry-run` plans a copy for the existing private Platform Story reader. Farm and Cast use the same command with their book name. Publishing to the hosted reader uses the owner's existing scoped Google Cloud configuration. Cyberpunk has a local book.
 
 Commit source code and synthetic fixtures only. Keep long-form drafts, cast packs, images and verdicts in the ignored `content/`. CI validates the Git index.
