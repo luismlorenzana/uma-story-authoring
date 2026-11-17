@@ -1,0 +1,24 @@
+{
+  "name": "uma-story-authoring",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.33.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "quest": "node quest/server.mjs",
+    "farm": "node --experimental-strip-types --no-warnings farm/server.mjs",
+    "cyberpunk": "node --import tsx cyberpunk/server.ts",
+    "test": "node --experimental-strip-types --no-warnings --test quest/lib/*.test.mjs farm/lib/*.test.mjs cyberpunk/lib/*.test.mjs"
+  },
+  "devDependencies": {
+    "tsx": "^4.20.6"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  }
+}
