@@ -8,13 +8,14 @@
     "node": ">=22"
   },
   "scripts": {
-    "quest": "node quest/server.mjs",
-    "farm": "node --experimental-strip-types --no-warnings farm/server.mjs",
-    "cyberpunk": "node --import tsx cyberpunk/server.ts",
-    "test": "node --experimental-strip-types --no-warnings --test quest/lib/*.test.mjs farm/lib/*.test.mjs cyberpunk/lib/*.test.mjs"
+    "start": "node --no-warnings --experimental-strip-types --import tsx hub.mjs",
+    "publish": "node --import tsx publishing/push.ts",
+    "pull": "node --import tsx publishing/pull.ts",
+    "test": "node --experimental-strip-types --no-warnings --test quest/lib/*.test.mjs farm/lib/*.test.mjs cyberpunk/lib/*.test.mjs && vitest run publishing"
   },
   "devDependencies": {
-    "tsx": "^4.20.6"
+    "tsx": "^4.20.6",
+    "vitest": "^3.2.7"
   },
   "pnpm": {
     "onlyBuiltDependencies": [

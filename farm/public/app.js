@@ -8,7 +8,7 @@ const app = document.getElementById('app')
 let loadedAt = 0
 
 async function load() {
-  const response = await fetch('/api/state', { cache: 'no-store' })
+  const response = await fetch('./api/state', { cache: 'no-store' })
   const data = await response.json()
   if (!response.ok || !data.chapters) throw new Error(data.error ?? `HTTP ${response.status}`)
   index(data)
@@ -20,7 +20,7 @@ async function load() {
 }
 
 async function saveReview(input) {
-  const response = await fetch('/api/reviews', { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify(input) })
+  const response = await fetch('./api/reviews', { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify(input) })
   const data = await response.json()
   if (!response.ok) throw new Error(data.error ?? `HTTP ${response.status}`)
   D.data.reviews = data

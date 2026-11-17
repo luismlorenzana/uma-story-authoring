@@ -1,17 +1,17 @@
 # Uma Story Authoring
 
-Local review tools for the Quest, Farm, and Cyberpunk stories. Each sandbox keeps its own format, views, and local review file.
+Run `pnpm install` and `pnpm start`. Open the [Story Sandbox](http://127.0.0.1:4322) and choose Cyberpunk, Quest, or Farm. A single loopback server runs all three books.
 
-Clone this repo alongside the game checkouts. Run `pnpm install`, then start the sandbox you want.
-
-| Command | Local sandbox |
+| Book | Private story files and verdicts |
 | --- | --- |
-| `pnpm quest` | [Quest](http://127.0.0.1:4320) |
-| `pnpm farm` | [Farm](http://127.0.0.1:4321) |
-| `pnpm cyberpunk` | [Cyberpunk](http://127.0.0.1:4322) |
+| Cyberpunk | `content/cyberpunk/stories/` |
+| Quest | `content/quest/stories/` |
+| Farm | `content/farm/story/` |
 
-Use Node 22 or newer. Set `UMA_WORKSPACE` if the games are elsewhere, or set `UMA_QUEST_ROOT`, `UMA_FARM_ROOT`, or `UMA_CYBERPUNK_ROOT` to point to an individual checkout. The sandboxes keep their existing private directory and port overrides.
+Run with Node 22 or newer. Set `UMA_STORY_CONTENT` to change the private content root and `UMA_STORY_PORT` to change the port.
+Set `UMA_WORKSPACE` if the game checkouts are elsewhere, or set `UMA_QUEST_ROOT`, `UMA_FARM_ROOT`, or `UMA_CYBERPUNK_ROOT` individually.
+Farm and Cyberpunk validate through the corresponding game code. Game release packing continues to use each game's own schema and publication command.
 
-The apps read the existing private content, cast packs, and source art in place and store reviews in each game's private review file. Farm and Cyberpunk use the corresponding game checkout's story code for validation. Story authoring, game exports, and publishing stay with the existing game and platform workflows. This repo tracks source code and synthetic tests.
+`pnpm publish quest --dry-run` plans a copy for the existing private Platform Story reader. Farm and Cast use the same command with their book name. Publishing to the hosted reader uses the owner's existing scoped Google Cloud configuration. Cyberpunk has a local book.
 
-The initial sandbox implementations were extracted from the three game repos.
+Commit source code and synthetic fixtures only. Keep long-form drafts, cast packs, images and verdicts in the ignored `content/`. CI validates the Git index.

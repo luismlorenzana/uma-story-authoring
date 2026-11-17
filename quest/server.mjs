@@ -2,19 +2,16 @@
 // The Story Sandbox: a local-only page for reading and testing story bundles (docs/design/story-sandbox.md).
 // It binds to loopback, reads content/stories/ on every request (edit a file, reload the page), and serves only
 // the images the pack lists. Nothing here holds a name or a line of story.
-import { createServer } from 'node:http'
 import { readdir, readFile, realpath, rename, writeFile } from 'node:fs/promises'
 import { dirname, extname, join, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { castCounts, crossCheck, parseBundle, parsePack, parseRelationships, parseSetting, parseTags, parseWorld, STEPS, toWrite, wordCount, GAME_LINE_LIMIT, TOWN_LIMIT } from './lib/model.mjs'
 
-import { gameRoot } from '../workspace.mjs'
+import { authoringContent } from '../workspace.mjs'
 
 const here = dirname(fileURLToPath(import.meta.url))
-const content = resolve(process.env.UMA_QUEST_CONTENT ?? join(gameRoot('quest'), 'content'))
+const content = resolve(process.env.UMA_QUEST_CONTENT ?? authoringContent('quest'))
 const stories = join(content, 'stories')
-const port = Number(process.env.UMA_STORY_PORT ?? 4320)
-if (!Number.isSafeInteger(port) || port < 1 || port > 65535) throw new Error('Invalid port')
 
 const types = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.png': 'image/png', '.webp': 'image/webp', '.jpg': 'image/jpeg' }
 const pages = { '/': 'index.html', '/app.js': 'app.js', '/app.css': 'app.css', '/views.js': 'views.js', '/player.js': 'player.js' }
@@ -67,7 +64,7 @@ async function state() {
     const raw = await maybeJson(join(stories, 'relationships.json'), null)
     if (raw) ({ relationships, issues: relationshipIssues } = parseRelationships(raw, { pack, bundles: bundles.map((b) => b.bundle) }))
   } catch (e) { errors.push({ file: 'relationships.json', error: e.message }) }
-  const characters = pack.characters.map((c) => ({ ...c, images: Object.fromEntries(Object.entries(c.images).map(([k, p]) => [k, `/img/${pack.id}/${p.slice(7)}`])) }))
+  const characters = pack.characters.map((c) => ({ ...c, images: Object.fromEntries(Object.entries(c.images).map(([k, p]) => [k, `./img/${pack.id}/${p.slice(7)}`])) }))
   return {
     pack: { ...pack, characters }, packs: all, setting, world, worldIssues, bundles, errors, reviews,
     relationships, relationshipIssues,
@@ -107,21 +104,19 @@ function send(response, status, data) {
   response.end(JSON.stringify(data))
 }
 
-const server = createServer((request, response) => {
+export function handle(request, response, pathname) {
   (async () => {
     const host = request.headers.host
-    if (host !== `127.0.0.1:${port}` && host !== `localhost:${port}`) return send(response, 403, { error: 'Use the loopback URL' })
     response.setHeader('x-content-type-options', 'nosniff')
     response.setHeader('content-security-policy', "default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'")
-    const url = new URL(request.url ?? '/', `http://${host}`)
-    if (request.method === 'PUT' && url.pathname === '/api/reviews') {
+    if (request.method === 'PUT' && pathname === '/api/reviews') {
       const sameOrigin = (!request.headers.origin || request.headers.origin === `http://${host}`) && request.headers['sec-fetch-site'] !== 'cross-site'
       if (!sameOrigin || request.headers['content-type']?.split(';')[0] !== 'application/json') return send(response, 403, { error: 'Save from the local page' })
       return send(response, 200, await saveReview(await body(request)))
     }
     if (request.method !== 'GET') return send(response, 405, { error: 'Method not allowed' })
-    if (url.pathname === '/api/state') return send(response, 200, await state())
-    const img = url.pathname.match(/^\/img\/([a-z0-9-]+)\/([A-Za-z0-9._-]+\.(?:png|webp|jpg))$/)
+    if (pathname === '/api/state') return send(response, 200, await state())
+    const img = pathname.match(/^\/img\/([a-z0-9-]+)\/([A-Za-z0-9._-]+\.(?:png|webp|jpg))$/)
     if (img) {
       const pack = parsePack(await readJson(join(stories, 'packs', img[1], 'pack.json')))
       const listed = new Set(pack.characters.flatMap((c) => Object.values(c.images)))
@@ -130,7 +125,7 @@ const server = createServer((request, response) => {
       response.writeHead(200, { 'content-type': types[extname(file)], 'cache-control': 'max-age=86400' })
       return response.end(await readFile(file))
     }
-    const page = pages[url.pathname]
+    const page = pages[pathname]
     if (!page) return send(response, 404, { error: 'Not found' })
     response.writeHead(200, { 'content-type': types[extname(page)], 'cache-control': 'no-cache' })
     response.end(await readFile(join(here, 'public', page)))
@@ -138,5 +133,4 @@ const server = createServer((request, response) => {
     if (response.headersSent) return response.end()
     send(response, error.status ?? (error.code === 'ENOENT' ? 404 : 500), { error: error.message })
   })
-})
-server.listen(port, '127.0.0.1', () => console.log(`Story Sandbox: http://127.0.0.1:${port}  (content: ${stories})`))
+}

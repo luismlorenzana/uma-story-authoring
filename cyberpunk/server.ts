@@ -7,14 +7,14 @@
 // - the combat sprite sheets ChatGPT saves (D24) in content/design/character-looks/combat-masters/<outfitId>/, and each
 //   Uma's approved chibi stills from uma-platform's private authoring folder, for the Sprites page's reviews.
 // Its only write is the owner's verdicts, to the private content/stories/reviews.json. No name or line is in git.
-import { createServer, type IncomingMessage, type ServerResponse } from 'node:http'
+import { type IncomingMessage, type ServerResponse } from 'node:http'
 import { mkdir, readdir, readFile, realpath, rename, writeFile } from 'node:fs/promises'
 import { dirname, extname, join, resolve, sep } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { FOE_ORDER, packImages, parseCastPack, parseFoeFile, parseReviews, parseTies, parseVerdict, withVerdict } from './lib/model.mjs'
 import { latestSheets, parseSheetName, REQUESTED } from './lib/sprites.mjs'
 
-import { gameRoot } from '../workspace.mjs'
+import { authoringContent, gameRoot } from '../workspace.mjs'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const repo = gameRoot('cyberpunk')
@@ -29,12 +29,10 @@ type Finding = ReturnType<typeof checksReport>['findings'][number]
 type StoryPack = ReturnType<typeof parsePack>
 
 /** The private side (ignored by git): the story, the cast pack and the verdicts. */
-const content = resolve(process.env.UMA_CYBER_STORIES ?? join(repo, 'content/stories'))
+const content = resolve(process.env.UMA_CYBER_STORIES ?? authoringContent('cyberpunk', 'stories'))
 /** The combat sprite sheets (D24) and uma-platform's authored chibi sets, both private. */
 const masters = resolve(process.env.UMA_CYBER_SPRITES ?? join(repo, 'content/design/character-looks/combat-masters'))
 const platformSprites = resolve(process.env.UMA_PLATFORM_SPRITES ?? join(repo, '../uma-platform/content/authoring/sprites'))
-const port = Number(process.env.UMA_CYBER_STORY_PORT ?? 4322)
-if (!Number.isSafeInteger(port) || port < 1 || port > 65535) throw new Error('Invalid port')
 
 const types: Record<string, string> = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
@@ -77,7 +75,7 @@ async function castPack() {
   if (raw === null) return { pack: null, problem: null }
   try {
     const pack = parseCastPack(raw)
-    const served = (c: { images?: Record<string, string> }) => ({ ...c, images: Object.fromEntries(Object.entries(c.images ?? {}).map(([k, p]) => [k, `/img/${p.slice(7)}`])) })
+    const served = (c: { images?: Record<string, string> }) => ({ ...c, images: Object.fromEntries(Object.entries(c.images ?? {}).map(([k, p]) => [k, `./img/${p.slice(7)}`])) })
     return { pack: { ...pack, umas: pack.umas.map(served), heroines: pack.heroines.map(served) }, problem: null }
   } catch (e) { return { pack: null, problem: e instanceof Error ? e.message : String(e) } }
 }
@@ -201,23 +199,21 @@ function send(response: ServerResponse, status: number, data: unknown) {
   response.end(JSON.stringify(data))
 }
 
-const server = createServer((request, response) => {
+export function handle(request: IncomingMessage, response: ServerResponse, pathname: string) {
   (async () => {
     const host = request.headers.host
-    if (host !== `127.0.0.1:${port}` && host !== `localhost:${port}`) return send(response, 403, { error: 'Use the loopback URL' })
     response.setHeader('x-content-type-options', 'nosniff')
     response.setHeader('content-security-policy', "default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'")
-    const url = new URL(request.url ?? '/', `http://${host}`)
-    if (request.method === 'PUT' && url.pathname === '/api/reviews') {
+    if (request.method === 'PUT' && pathname === '/api/reviews') {
       const sameOrigin = (!request.headers.origin || request.headers.origin === `http://${host}`) && request.headers['sec-fetch-site'] !== 'cross-site'
       if (!sameOrigin || request.headers['content-type']?.split(';')[0] !== 'application/json') return send(response, 403, { error: 'Save from the local page' })
       return send(response, 200, await saveReview(await body(request)))
     }
     if (request.method !== 'GET') return send(response, 405, { error: 'Method not allowed' })
-    if (url.pathname === '/api/state') return send(response, 200, await state())
-    if (url.pathname === '/api/sprites') return send(response, 200, await sprites())
+    if (pathname === '/api/state') return send(response, 200, await state())
+    if (pathname === '/api/sprites') return send(response, 200, await sprites())
     // A combat sheet, only by the request's file name, inside its Uma's folder.
-    const sheet = url.pathname.match(/^\/sheet\/(\d{5,7})\/([A-Za-z0-9._-]+\.png)$/)
+    const sheet = pathname.match(/^\/sheet\/(\d{5,7})\/([A-Za-z0-9._-]+\.png)$/)
     if (sheet) {
       if (parseSheetName(sheet[2])?.outfit !== Number(sheet[1])) return send(response, 404, { error: 'Not a sheet' })
       const file = await inside(join(masters, sheet[1]!), sheet[2]!)
@@ -225,7 +221,7 @@ const server = createServer((request, response) => {
       return response.end(await readFile(file))
     }
     // Her approved chibi's key or turnaround still, from uma-platform's authoring folder.
-    const chibi = url.pathname.match(/^\/chibi\/(\d{5,7})\/(key|front|back|left|right)\.png$/)
+    const chibi = pathname.match(/^\/chibi\/(\d{5,7})\/(key|front|back|left|right)\.png$/)
     if (chibi) {
       const dir = await chibiDir(Number(chibi[1]))
       if (!dir) return send(response, 404, { error: 'No chibi set' })
@@ -234,7 +230,7 @@ const server = createServer((request, response) => {
       return response.end(await readFile(file))
     }
     // A picture, only when the cast pack lists it.
-    const img = url.pathname.match(/^\/img\/([A-Za-z0-9._-]+\.(?:png|webp|jpg))$/)
+    const img = pathname.match(/^\/img\/([A-Za-z0-9._-]+\.(?:png|webp|jpg))$/)
     if (img) {
       const pack = parseCastPack(await maybeJson(join(content, 'cast-pack/pack.json')))
       if (!packImages(pack).has(`images/${img[1]}`)) return send(response, 404, { error: 'Not a pack image' })
@@ -242,7 +238,7 @@ const server = createServer((request, response) => {
       response.writeHead(200, { 'content-type': types[extname(file)]!, 'cache-control': 'max-age=86400' })
       return response.end(await readFile(file))
     }
-    const page = pages[url.pathname]
+    const page = pages[pathname]
     if (!page) return send(response, 404, { error: 'Not found' })
     response.writeHead(200, { 'content-type': types[extname(page)]!, 'cache-control': 'no-cache' })
     response.end(await readFile(join(here, page)))
@@ -250,5 +246,4 @@ const server = createServer((request, response) => {
     if (response.headersSent) return response.end()
     send(response, error.status ?? (error.code === 'ENOENT' ? 404 : 500), { error: error.message })
   })
-})
-server.listen(port, '127.0.0.1', () => console.log(`Cyberpunk Story Sandbox: http://127.0.0.1:${port}  (story: ${content})`))
+}
