@@ -15,3 +15,7 @@ Farm and Cyberpunk validate through the corresponding game code. Game release pa
 `pnpm run publish quest --dry-run` plans a copy for the existing private Platform Story reader. Farm and Cast use the same command with their book name. Publishing to the hosted reader uses the owner's existing scoped Google Cloud configuration. Cyberpunk has a local book.
 
 Commit source code and synthetic fixtures only. Keep long-form drafts, cast packs, images and verdicts in the ignored `content/`. CI validates the Git index.
+
+## Cyberpunk four-pillar packets
+
+The [repository-local authoring queue](docs/handoff/cyberpunk-four-pillars/README.md) contains the coordinated Cyberpunk story packets. Start with Pillar 1's four splash scenes and use the shared game contract and private campaign register.
