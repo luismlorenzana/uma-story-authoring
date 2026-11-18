@@ -18,4 +18,6 @@ Commit source code and synthetic fixtures only. Keep long-form drafts, cast pack
 
 ## Cyberpunk four-pillar packets
 
-The [repository-local authoring queue](docs/handoff/cyberpunk-four-pillars/README.md) contains the coordinated Cyberpunk story packets. Start with Pillar 1's four splash scenes and use the shared game contract and private campaign register.
+Start with the [canonical Cyberpunk packet queue](https://github.com/luismlorenzana/uma-cyberpunk/blob/main/docs/handoff/README.md#four-pillar-art-and-story-queue) and [shared delivery contract](https://github.com/luismlorenzana/uma-cyberpunk/blob/main/docs/design/campaign-art-delivery.md). The story work begins with Pillar 1's four splash scenes.
+
+The local full handoff is at `content/cyberpunk-four-pillars/README.md`. Its source revision and hashes identify the canonical snapshot. `content/cyberpunk-four-pillars-handoff.json` identifies the game checkout and one shared private progress register. These local files stay ignored with other authoring material; cast, scripts, pictures and verdicts remain private. Refresh the handoff from the canonical queue when its contracts change.
