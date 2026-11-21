@@ -34,7 +34,7 @@ const types = {
 /** The page's files; the model is the tested one, shared with the server. */
 const pages = {
   '/': 'public/index.html', '/app.js': 'public/app.js', '/app.css': 'public/app.css', '/views.js': 'public/views.js', '/player.js': 'public/player.js',
-  '/bonds.js': 'public/bonds.js', '/people.js': 'public/people.js', '/model.js': 'lib/model.mjs',
+  '/duos.js': 'public/duos.js', '/bonds.js': 'public/bonds.js', '/people.js': 'public/people.js', '/model.js': 'lib/model.mjs',
 }
 
 const readJson = async (path) => JSON.parse(await readFile(path, 'utf8'))
@@ -149,6 +149,10 @@ async function storyState(game) {
     bibles,
     routes,
     pairs,
+    duoVisits: v.visitBeats ? (read.pack.household?.duos ?? []).flatMap(([a, b]) => [[a, b], [b, a]].map(who => {
+      const visit = { day: 1, kind: 'pajamas', who, looks: [1, 1] }
+      return { who, beats: [...v.visitBeats(read.pack, visit), ...v.visitBeats(read.pack, visit, true)] }
+    })) : null,
     // The household's scenes, house lines and finale.
     household: read.files.household ? entry('household.json', read.files.household) : null,
     // The opening's lines, as the game plays them on day 1.
