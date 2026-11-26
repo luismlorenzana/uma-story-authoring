@@ -2,7 +2,7 @@ import { execFileSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 
 const root = fileURLToPath(new URL('.', import.meta.url))
-const allowedRoot = new Set(['.gitignore', 'README.md', 'AGENTS.md', 'CLAUDE.md', 'package.json', 'pnpm-lock.yaml', 'tsconfig.json',
+const allowedRoot = new Set(['.gitignore', 'README.md', 'AGENTS.md', 'CLAUDE.md', 'vitest.config.ts', 'package.json', 'pnpm-lock.yaml', 'tsconfig.json',
   'paths.mjs', 'workspace.mjs', 'hub.mjs', 'check-private.mjs', '.github/workflows/ci.yml', '.claude/launch.json'])
 const source = /^(?:src|albums|publishing|quest|farm|cyberpunk|tools)\/(?:[a-z0-9_-]+\/)*[a-z0-9_.-]+\.(?:m?js|ts|css|html)$/
 const forbidden = /(?:^|\/)(?:content|references|drafts|reviews|node_modules|\.cache|dist|coverage)(?:\/|$)/i
