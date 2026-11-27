@@ -17,3 +17,12 @@
 *.svg
 *.tiff
 *.psd
+
+# Owner-private art must never enter git.
+owner-private/
+owner-only/
+private-variants/
+private-art-outbox/
+*.private.*
+*.key
+*.pem
