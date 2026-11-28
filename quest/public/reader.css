@@ -1,0 +1,94 @@
+/* The Quest library's reading views: overview, script library, chapter reader, the game's read, review desk, search
+   and bibles. Built on app.css's tokens and panels. */
+.books { padding: 6px 28px 0; font-size: 12px; }
+.books a { color: var(--muted); }
+.top { flex-wrap: wrap; row-gap: 8px; }
+.nav { flex-wrap: wrap; }
+.search-form { display: flex; }
+.search-form input, .lib-search { background: var(--panel); border: 1px solid var(--line-2); border-radius: 999px; color: var(--ink); padding: 6px 14px; font: inherit; font-size: 14px; min-width: 200px; }
+.lib-search { flex: 1; min-width: 260px; border-radius: 8px; padding: 9px 14px; }
+.lib { display: flex; flex-direction: column; gap: 18px; }
+.lib-head .eyebrow { margin: 0 0 2px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--gold); }
+.lib-head .lede { color: var(--ink-2); max-width: 70ch; }
+.lib-panel h2 { font-size: 19px; }
+.lib .summary { grid-template-columns: repeat(4, 1fr); margin: 0; }
+a.stat:hover { text-decoration: none; border-color: var(--line-2); }
+.ok { color: var(--ok); }
+.warn { color: var(--warn); }
+.scroll { overflow-x: auto; }
+
+.subnav { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+.subnav a { padding: 4px 12px; border-radius: 999px; border: 1px solid var(--line); color: var(--ink-2); font-size: 13px; }
+.subnav a.on, .subnav a:hover { background: var(--panel-2); border-color: var(--line-2); color: var(--ink); text-decoration: none; }
+
+/* The tier board on the overview. */
+.tier-board td { vertical-align: middle; }
+.tier-uma { position: relative; display: inline-flex; border-radius: 50%; }
+.tier-uma.placeholder, .tier-uma.none { opacity: 0.4; }
+.tier-uma .review-dot { position: absolute; right: -2px; bottom: -2px; border: 2px solid var(--panel); }
+.tier-scenes { position: absolute; top: -6px; right: -8px; font-size: 10px; background: var(--gold); color: var(--bg); border-radius: 999px; padding: 0 5px; }
+
+/* The script library. */
+.lib-rows { display: flex; flex-direction: column; gap: 10px; }
+.lib-row { display: grid; grid-template-columns: 280px 1fr; gap: 16px; align-items: center; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 14px; }
+.lib-who { display: flex; gap: 10px; align-items: center; color: var(--ink); }
+.lib-who:hover { text-decoration: none; }
+.lib-title { font-family: var(--serif); font-weight: 600; }
+.lib-chapters { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.lib-ch { display: flex; flex-direction: column; gap: 2px; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg-2); color: var(--ink-2); position: relative; min-height: 64px; }
+.lib-ch:hover { text-decoration: none; border-color: var(--line-2); }
+.lib-ch b { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+.lib-ch-title { font-size: 13px; color: var(--ink); overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.lib-ch.written { border-color: color-mix(in srgb, var(--gold) 50%, transparent); }
+.lib-ch.scripted { border-color: var(--ok); }
+.lib-ch.scripted-unplaced { border-color: var(--warn); }
+.lib-ch.empty { opacity: 0.5; }
+.lib-ch .review-dot { position: absolute; top: 8px; right: 8px; }
+.lib-state { font-size: 12px; padding: 2px 8px; border-radius: 4px; border: 1px solid var(--line); color: var(--ink-2); }
+.lib-state.scripted { color: var(--ok); border-color: var(--ok); }
+.lib-state.written { color: var(--gold-2); border-color: var(--line-2); }
+
+/* Reading a chapter. */
+.lib-scene { scroll-margin-top: 90px; }
+.lib-scene .section-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.transcript { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; max-width: 78ch; }
+.transcript .narration { font-family: var(--serif); font-style: italic; color: var(--ink-2); margin: 0; }
+.transcript .direction { color: var(--muted); font-size: 13px; margin: 0; }
+.transcript .direction::before { content: "▸ "; }
+.transcript .spoken { display: grid; grid-template-columns: 150px 1fr; gap: 12px; align-items: start; }
+.transcript .spoken p { margin: 0; }
+.transcript .spoken p.long { border-left: 3px solid var(--warn); padding-left: 8px; }
+.transcript .spoken.thought p { font-style: italic; color: var(--ink-2); }
+.transcript .speaker { display: flex; gap: 8px; align-items: center; font-weight: 600; font-size: 13px; }
+.transcript .title-card { text-align: center; padding: 12px; border-top: 1px solid var(--line-2); border-bottom: 1px solid var(--line-2); font-family: var(--serif); }
+.transcript .title-card b { display: block; font-size: 20px; color: var(--gold-2); }
+.transcript .title-card span { color: var(--muted); }
+.transcript .boss-card { display: flex; gap: 10px; align-items: center; padding: 10px 14px; border: 1px solid var(--danger); border-radius: 8px; color: var(--ink-2); }
+.transcript .boss-card b { color: var(--ink); font-family: var(--serif); font-size: 17px; }
+.transcript .choice { border-left: 3px solid var(--gold); padding-left: 12px; }
+.transcript .script-letter { background: var(--panel-2); border-radius: 6px; padding: 10px 14px; font-family: var(--serif); }
+.lib-pager { justify-content: space-between; }
+.lib-note { width: 100%; color: inherit; font: inherit; background: var(--bg-2); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; margin: 8px 0; }
+
+/* The review desk. */
+.desk td { vertical-align: middle; }
+.desk-edit td { background: var(--bg-2); }
+.btn.small { padding: 3px 10px; font-size: 12px; }
+
+/* Search. */
+.lib-results { display: flex; flex-direction: column; gap: 12px; padding-left: 22px; }
+.lib-results li > div { margin-top: 2px; }
+
+/* Bibles. */
+.lib-prose { max-width: 80ch; }
+.lib-prose blockquote { border-left: 3px solid var(--line-2); margin: 0 0 0.8em; padding: 4px 14px; color: var(--ink-2); }
+.lib-prose pre { background: var(--bg-2); padding: 10px 14px; border-radius: 8px; overflow-x: auto; }
+.lib-prose code { font-size: 13px; }
+
+@media (max-width: 900px) {
+  .lib .summary { grid-template-columns: repeat(2, 1fr); }
+  .lib-row { grid-template-columns: 1fr; }
+  .lib-chapters { grid-template-columns: repeat(2, 1fr); }
+  .transcript .spoken { grid-template-columns: 1fr; gap: 4px; }
+  .search-form input { min-width: 0; width: 100%; }
+}

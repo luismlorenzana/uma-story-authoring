@@ -3,23 +3,29 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Story Sandbox</title>
+  <title>Quest Story Sandbox</title>
   <link rel="stylesheet" href="./app.css">
+  <link rel="stylesheet" href="./reader.css">
   <script type="module" src="./app.js"></script>
 </head>
 <body>
-  <nav aria-label="Story books"><a href="/">All story books</a></nav>
+  <nav class="books" aria-label="Story books"><a href="/">All story books</a></nav>
   <header class="top">
-    <a class="brand" href="#/"><span class="brand-mark" aria-hidden="true">✦</span> Story Sandbox</a>
+    <a class="brand" href="#/"><span class="brand-mark" aria-hidden="true">✦</span> Quest Story Sandbox</a>
     <nav class="nav" aria-label="Sections">
-      <a href="#/" data-nav="stories">Stories</a>
-      <a href="#/cast" data-nav="cast">Cast</a>
-      <a href="#/tags" data-nav="tags">Tags</a>
+      <a href="#/" data-nav="overview">Overview</a>
+      <a href="#/stories" data-nav="stories">Stories</a>
+      <a href="#/library" data-nav="library">Script library</a>
+      <a href="#/cast" data-nav="characters">Characters</a>
       <a href="#/rel" data-nav="rel">Relationships</a>
-      <a href="#/counts" data-nav="counts">Counts</a>
-      <a href="#/world" data-nav="world">World</a>
+      <a href="#/world" data-nav="world">World &amp; lore</a>
+      <a href="#/game" data-nav="game">In the game</a>
+      <a href="#/review" data-nav="review">Review desk</a>
       <a href="#/format" data-nav="format">Format</a>
     </nav>
+    <form id="global-search" class="search-form" role="search">
+      <input id="story-search" type="search" placeholder="Search  /" aria-label="Search the Quest book">
+    </form>
     <span class="pack" id="pack"></span>
   </header>
   <main id="app" tabindex="-1"><p class="loading">Loading the pack…</p></main>
