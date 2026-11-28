@@ -424,7 +424,7 @@ function reviewTab(heroId, entry, onReview) {
   return h('div', { class: 'two' },
     h('div', { class: 'panel' },
       h('h3', { text: 'Your read' }),
-      h('p', { class: 'muted small', text: 'Saved to content/stories/reviews.json, next to the bundles, so the next session reads your note before it writes.' }),
+      h('p', { class: 'muted small', text: 'Saved to content/quest/stories/reviews.json, next to the bundles, so the next session reads your note before it writes.' }),
       row, h('div', { class: 'section-head' }), note,
       h('div', { class: 'row' }, h('button', { class: 'btn primary', onclick: async () => { saved.textContent = 'Saving…'; try { await onReview({ hero: heroId, status, note: note.value }); saved.textContent = 'Saved' } catch (e) { saved.textContent = `Not saved: ${e.message}` } }, text: 'Save note' }), saved),
     ),

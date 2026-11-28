@@ -1,20 +1,27 @@
 #!/usr/bin/env node
-// The Story Sandbox: a local-only page for reading and testing story bundles (docs/design/story-sandbox.md).
-// It binds to loopback, reads content/stories/ on every request (edit a file, reload the page), and serves only
-// the images the pack lists. Nothing here holds a name or a line of story.
+// The Quest book of the Story Sandbox: a local-only library for reading, playing, reviewing and checking story
+// bundles (uma-quest's docs/design/story-sandbox.md). It reads content/quest/stories/ on every request (edit a file,
+// reload the page), the bibles and roadmap beside it, and the story as the game reads it from the local uma-quest
+// checkout (lib/game.mjs). It serves only the images the pack lists. Nothing here holds a name or a line of story.
 import { readdir, readFile, realpath, rename, writeFile } from 'node:fs/promises'
 import { dirname, extname, join, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { castCounts, crossCheck, parseBundle, parsePack, parseRelationships, parseSetting, parseTags, parseWorld, STEPS, toWrite, wordCount, GAME_LINE_LIMIT, TOWN_LIMIT } from './lib/model.mjs'
 
-import { authoringContent } from '../workspace.mjs'
+import { questGame } from './lib/game.mjs'
+import { authoringContent, gameRoot } from '../workspace.mjs'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const content = resolve(process.env.UMA_QUEST_CONTENT ?? authoringContent('quest'))
 const stories = join(content, 'stories')
+const repo = gameRoot('quest')
+const TEXT_MAX = 512 * 1024
 
-const types = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.png': 'image/png', '.webp': 'image/webp', '.jpg': 'image/jpeg' }
-const pages = { '/': 'index.html', '/app.js': 'app.js', '/app.css': 'app.css', '/views.js': 'views.js', '/player.js': 'player.js' }
+const types = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.png': 'image/png', '.webp': 'image/webp', '.jpg': 'image/jpeg' }
+const pages = {
+  '/': 'public/index.html', '/app.js': 'public/app.js', '/app.css': 'public/app.css', '/views.js': 'public/views.js', '/player.js': 'public/player.js',
+  '/reader.js': 'public/reader.js', '/reader.css': 'public/reader.css', '/library.js': 'lib/library.mjs',
+}
 
 async function inside(root, path) {
   const [base, file] = await Promise.all([realpath(root), realpath(resolve(root, path))])
@@ -23,6 +30,14 @@ async function inside(root, path) {
 }
 const readJson = async (path) => JSON.parse(await readFile(path, 'utf8'))
 const maybeJson = async (path, fallback) => { try { return await readJson(path) } catch (e) { if (e.code === 'ENOENT') return fallback; throw e } }
+const maybeText = async (path) => { try { const t = await readFile(path, 'utf8'); return t.length > TEXT_MAX ? t.slice(0, TEXT_MAX) : t } catch (e) { if (e.code === 'ENOENT') return null; throw e } }
+
+/** The bibles: every Markdown file in bibles/, by name (world-building and notes that never reach the game). */
+async function bibles() {
+  const folder = join(stories, 'bibles')
+  const names = (await readdir(folder).catch(() => [])).filter((n) => /^[A-Za-z0-9._-]+\.md$/.test(n)).sort()
+  return Promise.all(names.map(async (n) => ({ name: n.replace(/\.md$/, ''), text: await maybeText(join(folder, n)) ?? '' })))
+}
 
 async function currentPack() {
   const folder = join(stories, 'packs')
@@ -65,7 +80,11 @@ async function state() {
     if (raw) ({ relationships, issues: relationshipIssues } = parseRelationships(raw, { pack, bundles: bundles.map((b) => b.bundle) }))
   } catch (e) { errors.push({ file: 'relationships.json', error: e.message }) }
   const characters = pack.characters.map((c) => ({ ...c, images: Object.fromEntries(Object.entries(c.images).map(([k, p]) => [k, `./img/${pack.id}/${p.slice(7)}`])) }))
+  // The library's extra reading (the Quest book's structure, after the Cyberpunk and Farm books): the bibles, the story
+  // roadmap, and the story as the game reads it.
+  const [bibleFiles, roadmap, game] = await Promise.all([bibles(), maybeText(join(stories, 'roadmap.md')), questGame(repo, { bundles: bundles.map((b) => b.bundle), pack })])
   return {
+    bibles: bibleFiles, roadmap, game,
     pack: { ...pack, characters }, packs: all, setting, world, worldIssues, bundles, errors, reviews,
     relationships, relationshipIssues,
     // The counts (Q60) and the private read of what looks unbalanced, with a recommendation each.
@@ -128,7 +147,7 @@ export function handle(request, response, pathname) {
     const page = pages[pathname]
     if (!page) return send(response, 404, { error: 'Not found' })
     response.writeHead(200, { 'content-type': types[extname(page)], 'cache-control': 'no-cache' })
-    response.end(await readFile(join(here, 'public', page)))
+    response.end(await readFile(join(here, page)))
   })().catch((error) => {
     if (response.headersSent) return response.end()
     send(response, error.status ?? (error.code === 'ENOENT' ? 404 : 500), { error: error.message })
